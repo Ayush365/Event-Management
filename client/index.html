@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventHub | Discover and Book Amazing Events</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">EventHub</div>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="#events">Events</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="register.html">Register</a></li>
+            </ul>
+            <div class="auth-buttons">
+                <a href="login.html" class="btn btn-primary">Sign In</a>
+            </div>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <h1>Memorable Events Start Here</h1>
+        <p>Browse through thousands of events, from concerts to workshops, and book your spot in seconds.</p>
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="Search events...">
+            <button id="search-btn" class="btn btn-primary">Search</button>
+        </div>
+    </section>
+
+    <div class="container" id="events">
+        <h2 class="section-title">Upcoming Events</h2>
+        <div class="event-grid" id="event-list">
+            <!-- Sample Event Card -->
+            <div class="event-card">
+                <div class="event-content">
+                    <div class="event-date">Oct 15, 2026 • 7:00 PM</div>
+                    <h3 class="event-title">Summer Music Festival</h3>
+                    <div class="event-location">
+                        <i class="fas fa-map-marker-alt"></i> Central Park, NYC
+                    </div>
+                    <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 1rem;">Experience the biggest music festival of the year with top artists from around the world.</p>
+                    <div style="display: flex; justify-content: flex-end; align-items: center;">
+                        <a href="event-details.html?id=1" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+            <!-- More cards will be loaded dynamically -->
+        </div>
+    </div>
+
+    <footer>
+        <div class="logo" style="margin-bottom: 1rem;">EventHub</div>
+        <p style="color: var(--text-muted); margin-bottom: 2rem;">Connecting people through unforgettable experiences.</p>
+        <div style="display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 2rem;">
+            <a href="#" style="color: white;"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" style="color: white;"><i class="fab fa-twitter"></i></a>
+            <a href="#" style="color: white;"><i class="fab fa-instagram"></i></a>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.8rem;">&copy; 2026 EventHub. All rights reserved.</p>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

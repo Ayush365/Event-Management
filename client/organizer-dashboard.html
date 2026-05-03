@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organizer Dashboard | EventHub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="logo">EventHub Dashboard</div>
+        <nav>
+            <ul>
+                <li><a href="index.html">View Site</a></li>
+                <li><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div style="margin-bottom: 3rem;">
+            <h1>Manage My Events</h1>
+            <button class="btn btn-primary" style="margin-top: 1rem; padding: 1rem 2rem; font-size: 1.1rem; border: 2px solid white; box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);" onclick="document.getElementById('create-modal').style.display='flex'">+ Create New Event</button>
+        </div>
+
+        <div id="organizer-events" class="event-grid">
+            <!-- Dynamic events -->
+        </div>
+    </div>
+
+    <!-- Create Event Modal -->
+    <div id="create-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+        <div class="box" style="width: 90%; max-width: 600px;">
+            <h2 style="margin-bottom: 1.5rem;">Create Event</h2>
+            <form id="create-event-form">
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Event Title</label>
+                    <input type="text" id="title" required>
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Description</label>
+                    <textarea id="description" required style="height: 100px;"></textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Date & Time</label>
+                        <input type="datetime-local" id="date" required>
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Total Seats</label>
+                        <input type="number" id="seats" required>
+                    </div>
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Location</label>
+                    <input type="text" id="location" required>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Create Event</button>
+                    <button type="button" class="btn" onclick="document.getElementById('create-modal').style.display='none'">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById('create-event-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const payload = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                date: document.getElementById('date').value,
+                seats: document.getElementById('seats').value,
+                location: document.getElementById('location').value
+            };
+
+            const res = await fetch('/api/events', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert('Event created and sent for approval!');
+                document.getElementById('create-modal').style.display='none';
+                loadOrganizerEvents();
+                e.target.reset();
+            } else {
+                const data = await res.json();
+                alert(data.message || 'Error creating event');
+            }
+        };
+
+        async function loadOrganizerEvents() {
+            const res = await fetch('/api/events/organizer', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const events = await res.json();
+            const grid = document.getElementById('organizer-events');
+            
+            if (events.length === 0) {
+                grid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1 / -1;">You have not created any events yet.</p>';
+                return;
+            }
+
+            grid.innerHTML = events.map(e => `
+                <div class="box" style="margin-bottom: 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                        <h3 style="color: #fff;">${e.title}</h3>
+                        <span class="badge badge-${e.status.toLowerCase()}">${e.status}</span>
+                    </div>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;"><i class="fas fa-calendar"></i> ${new Date(e.date).toLocaleString()}</p>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;"><i class="fas fa-map-marker-alt"></i> ${e.location}</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--glass-border); padding-top: 1rem;">
+                        <span style="color: var(--text-muted); font-size: 0.9rem;">Seats: ${e.seats}</span>
+                        <button onclick="deleteEvent(${e.id})" class="btn" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; padding: 0.5rem 1rem;">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function deleteEvent(id) {
+            if (!confirm('Are you sure you want to delete this event?')) return;
+            await fetch(`/api/events/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            loadOrganizerEvents();
+        }
+
+        loadOrganizerEvents();
+    </script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings | EventHub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="logo">EventHub</div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1>My Bookings</h1>
+        <div id="bookings-list" style="margin-top: 2rem; display: grid; gap: 1.5rem;">
+            <!-- Dynamic -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = 'login.html'; return; }
+
+            const res = await fetch(`/api/bookings/user`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const bookings = await res.json();
+            
+            const list = document.getElementById('bookings-list');
+            if (bookings.length === 0) {
+                list.innerHTML = '<p>You have no bookings yet.</p>';
+                return;
+            }
+
+            list.innerHTML = bookings.map(b => `
+                <div class="box" style="display: flex; justify-content: space-between; align-items: center; padding: 2rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <h3 style="color: var(--primary);">${b.title}</h3>
+                        <p style="color: var(--text-muted);">${new Date(b.date).toLocaleString()}</p>
+                        <p style="font-size: 0.9rem;">${b.location}</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <p style="font-size: 0.7rem; color: var(--text-muted);">TICKET ID</p>
+                        <p style="font-weight: 800; font-family: monospace; font-size: 1.2rem; color: var(--text);">${b.ticket_id}</p>
+                    </div>
+                </div>
+            `).join('');
+        });
+    </script>
+</body>
+</html>

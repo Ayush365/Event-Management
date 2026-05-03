@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Details | EventHub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">EventHub</div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="index.html#events">Events</a></li>
+            </ul>
+        </nav>
+        <div class="auth-buttons" id="auth-nav">
+            <!-- Dynamic -->
+        </div>
+    </header>
+
+    <div class="container" style="padding-top: 8rem;">
+        <div id="event-detail-container" style="display: grid; grid-template-columns: 1fr 400px; gap: 3rem; align-items: start;">
+            <div>
+                <h1 id="event-title" style="font-size: 3rem; margin-bottom: 1rem; color: #fff;">Loading...</h1>
+                <p id="event-description" style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 2rem;"></p>
+                
+                <div class="box">
+                    <h3 style="margin-bottom: 1rem; color: #fff;">Event Information</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <p style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">DATE & TIME</p>
+                            <p id="event-date" style="font-weight: 600; color: #fff;"></p>
+                        </div>
+                        <div>
+                            <p style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">LOCATION</p>
+                            <p id="event-location" style="font-weight: 600; color: #fff;"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="box" style="position: sticky; top: 120px;">
+                <h3 style="margin-bottom: 1.5rem; color: #fff;">Secure Your Spot</h3>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
+                    <span style="color: var(--text-muted);">Available Seats</span>
+                    <span id="event-seats" style="font-weight: 600; color: var(--secondary);">0</span>
+                </div>
+                <button id="book-now-btn" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem;">Book Now</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/event-details.js"></script>
+</body>
+</html>

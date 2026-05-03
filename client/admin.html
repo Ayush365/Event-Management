@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | EventHub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+    <header>
+        <div class="logo">EventHub Admin</div>
+        <nav>
+            <ul>
+                <li><a href="index.html">View Site</a></li>
+                <li><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div style="margin-bottom: 2rem;">
+            <h1>Admin Control Center</h1>
+            <button class="btn btn-primary" style="margin-top: 1rem; padding: 1rem 2rem; font-size: 1.1rem; border: 2px solid white; box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);" onclick="document.getElementById('create-modal').style.display='flex'">+ Create Event</button>
+        </div>
+        
+        <div style="margin-top: 2rem; display: flex; gap: 1rem; border-bottom: 1px solid #ddd;">
+            <button class="tab-btn active" onclick="showTab('events')">Events Approval</button>
+            <button class="tab-btn" onclick="showTab('users')">Manage Users</button>
+            <button class="tab-btn" onclick="showTab('bookings')">View Bookings</button>
+        </div>
+
+        <!-- Events Tab -->
+        <div id="events-tab" class="tab-content">
+            <table id="admin-events-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Organizer</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-events-list"></tbody>
+            </table>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="users-tab" class="tab-content" style="display: none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-users-list"></tbody>
+            </table>
+        </div>
+
+        <!-- Bookings Tab -->
+        <div id="bookings-tab" class="tab-content" style="display: none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Event</th>
+                        <th>Ticket ID</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-bookings-list"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'index.html';
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabName + '-tab').style.display = 'block';
+            event.target.classList.add('active');
+            
+            if (tabName === 'events') loadAdminEvents();
+            if (tabName === 'users') loadAdminUsers();
+            if (tabName === 'bookings') loadAdminBookings();
+        }
+
+        async function loadAdminEvents() {
+            const res = await fetch('/api/admin/events', { headers: { 'Authorization': `Bearer ${token}` } });
+            const events = await res.json();
+            document.getElementById('admin-events-list').innerHTML = events.map(e => `
+                <tr>
+                    <td>${e.title}</td>
+                    <td>ID: ${e.organizer_id}</td>
+                    <td>${new Date(e.date).toLocaleDateString()}</td>
+                    <td><span class="badge badge-${e.status.toLowerCase()}">${e.status}</span></td>
+                    <td>
+                        ${e.status === 'Pending' ? `
+                            <button onclick="updateStatus(${e.id}, 'Approved')" class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.8rem;">Approve</button>
+                            <button onclick="updateStatus(${e.id}, 'Rejected')" class="btn" style="padding: 0.4rem 1rem; font-size: 0.8rem; background: #eee;">Reject</button>
+                        ` : '-'}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadAdminUsers() {
+            const res = await fetch('/api/admin/users', { headers: { 'Authorization': `Bearer ${token}` } });
+            const users = await res.json();
+            document.getElementById('admin-users-list').innerHTML = users.map(u => `
+                <tr>
+                    <td>${u.name}</td>
+                    <td>${u.email}</td>
+                    <td>${u.role}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadAdminBookings() {
+            const res = await fetch('/api/admin/bookings', { headers: { 'Authorization': `Bearer ${token}` } });
+            const bookings = await res.json();
+            document.getElementById('admin-bookings-list').innerHTML = bookings.map(b => `
+                <tr>
+                    <td>${b.user_name}</td>
+                    <td>${b.event_title}</td>
+                    <td><code>${b.ticket_id}</code></td>
+                    <td>${new Date(b.booking_date).toLocaleString()}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function updateStatus(id, status) {
+            await fetch(`/api/admin/events/${id}/status`, {
+                method: 'PATCH',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ status })
+            });
+            loadAdminEvents();
+        }
+
+        // Initial load
+        loadAdminEvents();
+
+        // Create Event Form Handler
+        document.getElementById('create-event-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const payload = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                date: document.getElementById('date').value,
+                seats: document.getElementById('seats').value,
+                location: document.getElementById('location').value
+            };
+
+            const res = await fetch('/api/events', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert('Event created successfully as Admin!');
+                document.getElementById('create-modal').style.display='none';
+                loadAdminEvents(); // Reload the table
+                e.target.reset();
+            } else {
+                const data = await res.json();
+                alert(data.message || 'Error creating event');
+            }
+        };
+    </script>
+
+    <!-- Create Event Modal -->
+    <div id="create-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+        <div class="box" style="width: 90%; max-width: 600px;">
+            <h2 style="margin-bottom: 1.5rem;">Create Event</h2>
+            <form id="create-event-form">
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Event Title</label>
+                    <input type="text" id="title" required>
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Description</label>
+                    <textarea id="description" required style="height: 100px;"></textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Date & Time</label>
+                        <input type="datetime-local" id="date" required>
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Total Seats</label>
+                        <input type="number" id="seats" required>
+                    </div>
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Location</label>
+                    <input type="text" id="location" required>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Create Event</button>
+                    <button type="button" class="btn" onclick="document.getElementById('create-modal').style.display='none'">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
