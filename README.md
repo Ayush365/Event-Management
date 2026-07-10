@@ -1,4 +1,4 @@
-# Online Event Booking and Management System (TCS iON Case Study)
+# Online Event Booking and Management System 
 
 A full-stack responsive web application for managing event bookings.
 
@@ -6,7 +6,7 @@ A full-stack responsive web application for managing event bookings.
 - **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
 - **Backend**: Node.js, Express
 - **Database**: MySQL
-- **Authentication**: JWT (JSON Web Token) with bcrypt hashing
+
 
 ## Project Structure
 ```
@@ -88,4 +88,4 @@ user8@example.com
 user12@example.com
 user16@example.com
 user20@example.com
-You can use any of these emails along with password123 to log in and test different access levels across your application! Let me know if you need any other modifications!
+
